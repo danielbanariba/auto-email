@@ -1,0 +1,31 @@
+{
+    "email_settings": {
+        "smtp_server": "smtp.office365.com",
+        "port": 587,
+        "sender_email": "dabarrientos@unah.hn"
+    },
+    "email_template": {
+        "subject": "Encuesta - Tesis sobre el Impacto de la Música en el Desarrollo Integral en Ingeniería",
+        "location": "Tegucigalpa",
+        "greeting": "Estimado(a) estudiante de la Carrera de Ingeniería en Sistemas {name}, un cordial saludo esperando se encuentre de la mejor manera.",
+        "body": "Nos dirigimos a usted como estudiantes de último año de la carrera de Ingeniería en\nSistemas, desarrollando la tesis \"IMPACTO DE LA MÚSICA EN EL DESARROLLO\nINTEGRAL EN INGENIERÍA EN SISTEMAS\" como parte del curso Seminario de\nInvestigación (IS115).",
+        "survey_intro": "Le agradeceríamos su valiosa colaboración al responder la siguiente encuesta, la\ncual tomará aproximadamente 4 minutos de su tiempo.",
+        "survey_link": "https://docs.google.com/forms/d/e/1FAIpQLSceUVRmwLzyCEm-uPpOUbBEX1Y1xWwG5PcNcrYMkrexH_o1Q/viewform?usp=sharing",
+        "closing": "Agradeciendo de antemano su colaboración.",
+        "signature": "Atentamente,\nEstudiantes de Seminario de Investigación"
+    },
+    "error_messages": {
+        "credentials": {
+            "message": "\nError de verificación de credenciales: {error}",
+            "instructions": [
+                "Por favor asegúrate de:",
+                "1. El correo y la contraseña son correctos",
+                "2. Tu cuenta permite el acceso de aplicaciones menos seguras"
+            ]
+        }
+    },
+    "months_spanish": [
+        "enero", "febrero", "marzo", "abril", "mayo", "junio",
+        "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"
+    ]
+}
