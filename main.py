@@ -13,10 +13,9 @@ if 'SSLKEYLOGFILE' in os.environ:
 
 def verify_credentials(email, password):
     try:
-        # Crear contexto SSL sin verificación de archivo de log
+        # Configuración para Outlook/Hotmail
         context = ssl.create_default_context()
-        
-        server = smtplib.SMTP("smtp.gmail.com", 587)
+        server = smtplib.SMTP("smtp.office365.com", 587)
         server.ehlo()
         server.starttls(context=context)
         server.ehlo()
@@ -26,13 +25,13 @@ def verify_credentials(email, password):
     except Exception as e:
         print(f"\nError de verificación de credenciales: {str(e)}")
         print("\nPor favor asegúrate de:")
-        print("1. Tener activada la verificación en dos pasos")
-        print("2. Usar una contraseña de aplicación válida")
-        print("3. El correo y la contraseña son correctos")
+        print("1. El correo y la contraseña son correctos")
+        print("2. Tu cuenta permite el acceso de aplicaciones menos seguras")
         return False
 
-def send_email(sender_email, app_password, recipient, name, subject):
-    smtp_server = "smtp.gmail.com"
+def send_email(sender_email, password, recipient, name, subject):
+    # Configuración para Outlook/Hotmail
+    smtp_server = "smtp.office365.com"
     port = 587
 
     message = MIMEMultipart('alternative')
@@ -54,7 +53,7 @@ def send_email(sender_email, app_password, recipient, name, subject):
             server.ehlo()
             server.starttls(context=context)
             server.ehlo()
-            server.login(sender_email, app_password)
+            server.login(sender_email, password)
             server.send_message(message)
             print(f"Correo enviado exitosamente a {name} ({recipient})")
     except Exception as e:
@@ -66,13 +65,12 @@ def load_data(file_path):
     return data['Sheet']
 
 def main():
-    sender_email = ""
-    # Eliminar espacios de la contraseña ingresada
-    app_password = input("Ingresa la contraseña de aplicación de Google (16 caracteres sin espacios): ").replace(" ", "")
+    sender_email = ""  # Tu correo institucional
+    password = input("Ingresa tu contraseña: ")
 
     # Verificar credenciales antes de continuar
     print("\nVerificando credenciales...")
-    if not verify_credentials(sender_email, app_password):
+    if not verify_credentials(sender_email, password):
         return
 
     subject = "Prueba de envío automático de correos"
@@ -89,7 +87,7 @@ def main():
                 continue
 
             print(f"Enviando correo a {name}...")
-            send_email(sender_email, app_password, email, name, subject)
+            send_email(sender_email, password, email, name, subject)
             time.sleep(1)
 
     except Exception as e:
