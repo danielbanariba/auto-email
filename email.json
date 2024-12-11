@@ -1,22 +1,11 @@
 {
-    "Sheet":[
-     {
-      "Num": 1,
-      "Cuenta": 20001001412,
-      "Nombre": "JF",
-      "Email Institcional": "jfmejiab@unah.hn"
-     },
-     {
-        "Num": 2,
-        "Cuenta": 20001001412,
-        "Nombre": "Ruth",
-        "Email Institcional": "ryayala@unah.hn"
-       },
-         {
-         "Num": 3,
-         "Cuenta": 20001001412,
-         "Nombre": "JF",
-         "Email Institcional": "banaribad@gmail.com"
-         }
+    "recipients": [
+        "franklinlopez096@gmail.com",
+        "ercruzb@unah.hn",
+        "joelamador55@gmail.com",
+        "josue.salomon@unah.hn",
+        "famadorl@unah.hn",
+        "issac.cruz@unah.hn",
+        "dabarrientos@unah.hn"
     ]
-    }
+}

